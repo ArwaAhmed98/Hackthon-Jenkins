@@ -27,11 +27,14 @@ BACKUP_DIRECTORY = "/Users/Islam.mohamed5/Desktop/hackathon"  # Directory to sto
 BUILD_POLL_INTERVAL = 10  # Time in seconds between status checks
 
 
-def auditing(jenkins_url,job_name,build_number):
+def auditing(jenkins_url,job_name,build_number,FLAG):
     # # send email to Teams Channel, Auditing
     webhook_url = "https://vodafone.webhook.office.com/webhookb2/eb0c06d1-590f-4bac-b21d-fd6a41e86cde@68283f3b-8487-4c86-adb3-a5228f18b893/IncomingWebhook/471c53e15e7d4ddb9fc6fdc5eb0c6001/8073a3a4-4a6a-4909-bacf-f7eff6c2fcc4"
+    content = f"Build Fixed Using AI with Build URL: {jenkins_url}/job/{job_name}/{build_number}/ :large_green_circle: :large_green_circle:"
+    if not FLAG :
+        content =  f"Build Failed Using AI with Build URL: {jenkins_url}/job/{job_name}/{build_number}/ :large_red_circle: :large_red_circle:"
     message = {
-    "text": f"Build Fixed Using AI with Build URL: http://{jenkins_url}/job/{job_name}/{build_number}/"
+    "text": content
     }
     response = requests.post(webhook_url, json=message)
     if response.status_code == 200:
@@ -44,7 +47,7 @@ def auditing(jenkins_url,job_name,build_number):
     smtp_server_url= os.getenv("SMTP_SERVER","smtp.gmail.com")
 
     receiver_email = "islam.mohamed5@vodafone.com"
-    subject = "Ai Report - Fixed Issue"
+    subject = "Ai Report - Fixed CI/CD with AI"
     html_body = "open this link  <a href= 'https://chatgpt.com/'> click here </a>"
 
     # Create a multipart message and set headers
@@ -341,10 +344,11 @@ def main():
                                     print(f"Fallback build {fallback_build_number} succeeded.")
                                     # Save the console log for the fallback build
                                     get_build_console_log(JENKINS_URL, JOB_NAME, fallback_build_number, USERNAME, API_TOKEN)
-                                    auditing(JENKINS_URL,JOB_NAME,fallback_build_number)
+                                    auditing(JENKINS_URL,JOB_NAME,fallback_build_number,True)
                                     return
                                 else:
                                     print(f"Fallback build {fallback_build_number} failed.")
+                                    auditing(JENKINS_URL,JOB_NAME,fallback_build_number,False)
                                     # jenkins job failed
                             else:
                                 print(f"Failed to retrieve build status for fallback build {fallback_build_number}.")
